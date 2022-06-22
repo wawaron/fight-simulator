@@ -1,0 +1,7 @@
+[package]
+name = "fight-simulator"
+version = "0.1.0"
+authors = ["Patrick Provost"]
+edition = "2021"
+
+[dependencies]

@@ -17,8 +17,15 @@ fn main() {
         defense: 50.0,
     };
 
+    let mut stat_rounds = 0;
+    let mut stat_f1_attack = 0;
+    let mut stat_f1_succ_attack = 0;
+    let mut stat_f2_attack = 0;
+    let mut stat_f2_succ_attack = 0;
+
     let mut rng = thread_rng();
     let mut fight_is_on = true;
+    println!("");
     while fight_is_on {
         // Fighters choose an action:
         // 1. Standing (1/3)
@@ -30,13 +37,17 @@ fn main() {
         if f1_action == 2 {
             if f2_action != 3 {
                 f2.health -= 10.0;
+                stat_f1_succ_attack += 1;
             }
+            stat_f1_attack += 1;
         }
 
         if f2_action == 2 {
             if f1_action != 3 {
                 f1.health -= 10.0;
+                stat_f2_succ_attack += 1;
             }
+            stat_f2_attack += 1;
         }
 
         if (f1.health <= 0.0) || (f2.health <= 0.0) {
@@ -50,5 +61,16 @@ fn main() {
                 println!("{} wins!", f1.name);
             }
         }
+        stat_rounds += 1;
     }
+
+    println!("\nGeneral:");
+    println!("Number of rounds: {}", stat_rounds);
+    println!("\n{}:", f1.name);
+    println!("Health remaining: {}", f1.health);
+    println!("Attack success: {}/{}", stat_f1_succ_attack, stat_f1_attack);
+    println!("\n{}:", f2.name);
+    println!("Health remaining: {}", f2.health);
+    println!("Attack success: {}/{}", stat_f2_succ_attack, stat_f2_attack);
+    println!("");
 }

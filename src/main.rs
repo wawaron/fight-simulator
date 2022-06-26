@@ -20,13 +20,11 @@ fn main() {
     let mut stat_f2_succ_attack: u64 = 0;
 
     let mut f1 = fighter::Fighter {
-        name: "Ryu".to_string(),
         health: 100.0,
         offense: 50.0,
         defense: 50.0,
     };
     let mut f2 = fighter::Fighter {
-        name: "Ken".to_string(),
         health: 100.0,
         offense: 50.0,
         defense: 50.0,
@@ -103,8 +101,8 @@ fn main() {
 
     println!("Results:");
     println!("Equity: {:.2}", stat_win_equity);
-    println!("{} won: {:.2}%", f1.name, stat_f1_win_pct);
-    println!("{} won: {:.2}%", f2.name, stat_f2_win_pct);
+    println!("Fighter1 won: {:.2}%", stat_f1_win_pct);
+    println!("Fighter2 won: {:.2}%", stat_f2_win_pct);
     println!("Draw: {:.2}%", stat_draw_pct);
     println!("\nGeneral:");
     println!(
@@ -114,10 +112,10 @@ fn main() {
     println!("Minimum number of rounds: {}", stat_min_rounds);
     println!("Maximum number of rounds: {}", stat_max_rounds);
 
-    println!("\n{}:", f1.name);
+    println!("\nFighter1:");
     println!("Attack Success Rate: {:.2}%", stat_f1_attack_pct);
 
-    println!("\n{}:", f2.name);
+    println!("\nFighter2:");
     println!("Attack Success Rate: {:.2}%", stat_f2_attack_pct);
 
     println!("");

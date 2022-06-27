@@ -1,6 +1,6 @@
 #[derive(Debug)]
 pub struct Statistics {
-    pub num_sim: u64,
+    pub num_sims: u64,
     pub rounds: u64,
     pub total_rounds: u64,
     pub min_rounds: u64,
@@ -21,12 +21,12 @@ pub struct Statistics {
 }
 
 impl Statistics {
-    pub fn new(num_sim: u64) -> Self {
+    pub fn new(num_sims: u64) -> Self {
         Self {
-            num_sim,
+            num_sims,
             rounds: 0,
             total_rounds: 0,
-            min_rounds: u64::MAX,
+            min_rounds: 0,
             max_rounds: 0,
             f1_win: 0,
             f2_win: 0,
@@ -45,9 +45,9 @@ impl Statistics {
     }
 
     pub fn calculate(mut self) -> Self {
-        self.f1_win_pct = (self.f1_win as f64) * 100.0 / (self.num_sim as f64);
-        self.f2_win_pct = (self.f2_win as f64) * 100.0 / (self.num_sim as f64);
-        self.draw_pct = (self.draw as f64) * 100.0 / (self.num_sim as f64);
+        self.f1_win_pct = (self.f1_win as f64) * 100.0 / (self.num_sims as f64);
+        self.f2_win_pct = (self.f2_win as f64) * 100.0 / (self.num_sims as f64);
+        self.draw_pct = (self.draw as f64) * 100.0 / (self.num_sims as f64);
         self.win_equity = if self.f1_win_pct > self.f2_win_pct {
             self.f1_win_pct - self.f2_win_pct
         } else {
@@ -55,6 +55,25 @@ impl Statistics {
         };
         self.f1_attack_pct = (self.f1_succ_attack as f64) * 100.0 / (self.f1_attack as f64);
         self.f2_attack_pct = (self.f2_succ_attack as f64) * 100.0 / (self.f2_attack as f64);
+
+        self
+    }
+
+    pub fn join(mut self, join: &Self) -> Self {
+        self.total_rounds += join.total_rounds;
+        if (join.min_rounds < self.min_rounds) || (self.min_rounds == 0) {
+            self.min_rounds = join.min_rounds;
+        }
+        if join.max_rounds > self.max_rounds {
+            self.max_rounds = join.max_rounds;
+        }
+        self.f1_win += join.f1_win;
+        self.f2_win += join.f2_win;
+        self.draw += join.draw;
+        self.f1_attack += join.f1_attack;
+        self.f1_succ_attack += join.f1_succ_attack;
+        self.f2_attack += join.f2_attack;
+        self.f2_succ_attack += join.f2_succ_attack;
 
         self
     }
@@ -69,7 +88,7 @@ impl Statistics {
         println!("\nGeneral:");
         println!(
             "Average number of rounds: {}",
-            (self.total_rounds as f64 / self.num_sim as f64).round()
+            (self.total_rounds as f64 / self.num_sims as f64).round()
         );
         println!("Minimum number of rounds: {}", self.min_rounds);
         println!("Maximum number of rounds: {}", self.max_rounds);

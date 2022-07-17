@@ -1,3 +1,4 @@
+mod actions;
 mod fighter;
 mod statistics;
 
@@ -23,16 +24,21 @@ fn main() {
         let tx = tx.clone();
         thread::spawn(move || {
             let mut rng = thread_rng();
+            let actions = actions::initialize_actions();
             let mut stats = statistics::Statistics::new(NUM_SIMS);
             let mut f1 = fighter::Fighter {
                 health: 100.0,
                 offense: 50.0,
                 defense: 50.0,
+                action: 0,
+                anim_time: 0,
             };
             let mut f2 = fighter::Fighter {
                 health: 100.0,
                 offense: 50.0,
                 defense: 50.0,
+                action: 0,
+                anim_time: 0,
             };
 
             //------------------------------------------------------------------------------
@@ -40,27 +46,70 @@ fn main() {
                 let mut fight_is_on = true;
 
                 while fight_is_on {
-                    // Fighters choose an action:
-                    // 1. Standing (1/3)
-                    // 2. Attack (1/3)
-                    // 3. Defense (1/3)
-                    let f1_action: u8 = rng.gen_range(1..=3);
-                    let f2_action: u8 = rng.gen_range(1..=3);
+                    if f1.anim_time > 0 {
+                        f1.anim_time -= 1;
+                    } else {
+                        f1.action = rng.gen_range(1..6);
+                        f1.anim_time = actions[f1.action].duration;
 
-                    if f1_action == 2 {
-                        if f2_action != 3 {
-                            f2.health -= 10.0;
-                            stats.f1_succ_attack += 1;
+                        if (f1.action == 4) || (f1.action == 5) {
+                            stats.f1_attack += 1;
                         }
-                        stats.f1_attack += 1;
                     }
 
-                    if f2_action == 2 {
-                        if f1_action != 3 {
-                            f1.health -= 10.0;
-                            stats.f2_succ_attack += 1;
+                    if f2.anim_time > 0 {
+                        f2.anim_time -= 1;
+                    } else {
+                        f2.action = rng.gen_range(1..6);
+                        f2.anim_time = actions[f2.action].duration;
+
+                        if (f2.action == 4) || (f2.action == 5) {
+                            stats.f2_attack += 1;
                         }
-                        stats.f2_attack += 1;
+                    }
+
+                    if (f1.anim_time == actions[f1.action].hit_frame) && (f1.anim_time > 0) {
+                        match f2.action {
+                            1 => {
+                                f2.health -= actions[f1.action].damage;
+                                stats.f1_succ_attack += 1;
+                            }
+                            2 => {}
+                            3 => {
+                                f2.health -= actions[f1.action].damage / 2.0;
+                            }
+                            4 => {
+                                f2.health -= actions[f1.action].damage * 1.5;
+                                stats.f1_succ_attack += 1;
+                            }
+                            5 => {
+                                f2.health -= actions[f1.action].damage * 1.5;
+                                stats.f1_succ_attack += 1;
+                            }
+                            _ => {}
+                        }
+                    }
+
+                    if (f2.anim_time == actions[f2.action].hit_frame) && (f2.anim_time > 0) {
+                        match f1.action {
+                            1 => {
+                                f1.health -= actions[f2.action].damage;
+                                stats.f2_succ_attack += 1;
+                            }
+                            2 => {}
+                            3 => {
+                                f1.health -= actions[f2.action].damage / 2.0;
+                            }
+                            4 => {
+                                f1.health -= actions[f2.action].damage * 1.5;
+                                stats.f2_succ_attack += 1;
+                            }
+                            5 => {
+                                f1.health -= actions[f2.action].damage * 1.5;
+                                stats.f2_succ_attack += 1;
+                            }
+                            _ => {}
+                        }
                     }
 
                     if (f1.health <= 0.0) || (f2.health <= 0.0) {
@@ -75,20 +124,13 @@ fn main() {
                         }
                     }
 
-                    stats.rounds += 1;
+                    stats.frames += 1;
                 }
 
                 //------------------------------------------------------------------------------
-                stats.total_rounds += stats.rounds;
-                if (stats.rounds < stats.min_rounds) || (stats.min_rounds == 0) {
-                    stats.min_rounds = stats.rounds;
-                }
-                if stats.rounds > stats.max_rounds {
-                    stats.max_rounds = stats.rounds;
-                }
-                stats.rounds = 0;
                 f1.health = 100.0;
                 f2.health = 100.0;
+                stats.update_stats_after_fight();
             }
 
             tx.send(stats).expect("Transmission failed");

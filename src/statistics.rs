@@ -1,10 +1,10 @@
 #[derive(Debug)]
 pub struct Statistics {
     pub num_sims: u64,
-    pub rounds: u64,
-    pub total_rounds: u64,
-    pub min_rounds: u64,
-    pub max_rounds: u64,
+    pub frames: u64,
+    pub total_frames: u64,
+    pub min_frames: u64,
+    pub max_frames: u64,
     pub f1_win: u64,
     pub f2_win: u64,
     pub draw: u64,
@@ -24,10 +24,10 @@ impl Statistics {
     pub fn new(num_sims: u64) -> Self {
         Self {
             num_sims,
-            rounds: 0,
-            total_rounds: 0,
-            min_rounds: 0,
-            max_rounds: 0,
+            frames: 0,
+            total_frames: 0,
+            min_frames: 0,
+            max_frames: 0,
             f1_win: 0,
             f2_win: 0,
             draw: 0,
@@ -60,12 +60,12 @@ impl Statistics {
     }
 
     pub fn join(mut self, join: &Self) -> Self {
-        self.total_rounds += join.total_rounds;
-        if (join.min_rounds < self.min_rounds) || (self.min_rounds == 0) {
-            self.min_rounds = join.min_rounds;
+        self.total_frames += join.total_frames;
+        if (join.min_frames < self.min_frames) || (self.min_frames == 0) {
+            self.min_frames = join.min_frames;
         }
-        if join.max_rounds > self.max_rounds {
-            self.max_rounds = join.max_rounds;
+        if join.max_frames > self.max_frames {
+            self.max_frames = join.max_frames;
         }
         self.f1_win += join.f1_win;
         self.f2_win += join.f2_win;
@@ -87,16 +87,27 @@ impl Statistics {
 
         println!("\nGeneral:");
         println!(
-            "Average number of rounds: {}",
-            (self.total_rounds as f64 / self.num_sims as f64).round()
+            "Average number of frames: {}",
+            (self.total_frames as f64 / self.num_sims as f64).round()
         );
-        println!("Minimum number of rounds: {}", self.min_rounds);
-        println!("Maximum number of rounds: {}", self.max_rounds);
+        println!("Minimum number of frames: {}", self.min_frames);
+        println!("Maximum number of frames: {}", self.max_frames);
 
         println!("\nFighter1:");
         println!("Attack Success Rate: {:.2}%", self.f1_attack_pct);
 
         println!("\nFighter2:");
         println!("Attack Success Rate: {:.2}%", self.f2_attack_pct);
+    }
+
+    pub fn update_stats_after_fight(&mut self) {
+        self.total_frames += self.frames;
+        if (self.frames < self.min_frames) || (self.min_frames == 0) {
+            self.min_frames = self.frames;
+        }
+        if self.frames > self.max_frames {
+            self.max_frames = self.frames;
+        }
+        self.frames = 0;
     }
 }
